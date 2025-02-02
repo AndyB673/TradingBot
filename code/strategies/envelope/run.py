@@ -266,7 +266,11 @@ if long_ok:
                 reduce=True,
                 print_error=True,
             )
-            info["stop_loss_ids"].append(sl_order['id'])
+            if sl_order is None:
+             print("Stop-loss order failed, skipping ID append.")
+            else:
+             info["stop_loss_ids"].append(sl_order['id'])
+            
             print(f"{datetime.now().strftime('%H:%M:%S')}: placed sl long trigger market order of {amount}, price {data[f'band_low_{i + 1}'].iloc[-1] * (1 - params['stop_loss_pct'])}")
         else:
             print(f"{datetime.now().strftime('%H:%M:%S')}: /!\\ long orders not placed for envelope {i+1}, amount {amount} smaller than minimum requirement {min_amount}")
