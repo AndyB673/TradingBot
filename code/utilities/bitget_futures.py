@@ -178,9 +178,8 @@ class BitgetFutures():
 
     def place_market_order(self, symbol: str, side: str, amount: float, reduce: bool = False) -> Dict[str, Any]:
         try:
-            params = {
-                'reduceOnly': reduce,
-            }
+            params = {'reduceOnly': reduce} 
+
             amount = self.amount_to_precision(symbol, amount)
             return self.session.create_order(symbol, 'market', side, amount, params=params)
 
@@ -189,9 +188,8 @@ class BitgetFutures():
 
     def place_limit_order(self, symbol: str, side: str, amount: float, price: float, reduce: bool = False) -> Dict[str, Any]:
         try:
-            params = {
-                'reduceOnly': reduce,
-            }
+            params = {'reduceOnly': reduce} 
+
             amount = self.amount_to_precision(symbol, amount)
             price = self.price_to_precision(symbol, price)
             return self.session.create_order(symbol, 'limit', side, amount, price, params=params)
@@ -206,7 +204,8 @@ class BitgetFutures():
             params = {
                 'reduceOnly': reduce,
                 'triggerPrice': trigger_price,
-                'delegateType': 'price_fill',
+                'planType': 'normal_plan'
+               
             }
             return self.session.create_order(symbol, 'market', side, amount, params=params)
         except Exception as err:
@@ -224,7 +223,7 @@ class BitgetFutures():
             params = {
                 'reduceOnly': reduce,
                 'triggerPrice': trigger_price,
-                'delegateType': 'price_fill',
+                'planType': 'normal_plan'
             }
             return self.session.create_order(symbol, 'limit', side, amount, price, params=params)
         except Exception as err:
