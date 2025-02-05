@@ -11,7 +11,7 @@ from utilities.bitget_futures import BitgetFutures
 
 # --- CONFIG ---
 params = {
-    'symbol': '/USDT:USDT',
+    'symbol': 'PEPE/USDT:USDT',
     'timeframe': '1h',
     'margin_mode': 'isolated',  # 'cross'
     'balance_fraction': 1,
@@ -19,8 +19,8 @@ params = {
     'average_type': 'DCM',  # 'SMA', 'EMA', 'WMA', 'DCM' 
     'average_period': 5,
     'envelopes': [0.07, 0.11, 0.14],
-    'stop_loss_pct': 0.4,
-#    'price_jump_pct': 0.3,  # optional, uncomment to use
+    'stop_loss_pct': 0.04,
+    'price_jump_pct': 0.1,  # optional, uncomment to use
     'use_longs': True,  # set to False if you want to use only shorts
     'use_shorts': True,  # set to False if you want to use only longs
 }
@@ -123,7 +123,7 @@ if open_position:
 # --- CHECKS IF CLOSE ALL SHOULD TRIGGER ---
 if 'price_jump_pct' in params and open_position:
     if position['side'] == 'long':
-        if data['close'].iloc[-1] < float(position['info']['openPriceAvg']) * (1 - params['price_jump_pct']):
+        if data['close'].iloc[-1] < float(position['info']['openPriceAvg']) * (1 - params['price_jump_pct']*0.70):
             bitget.flash_close_position(params['symbol'])
             update_tracker_file(tracker_file, {
                 "last_side": "long",
@@ -133,7 +133,7 @@ if 'price_jump_pct' in params and open_position:
             print(f"{datetime.now().strftime('%H:%M:%S')}: /!\\ close all was triggered")
 
     elif position['side'] == 'short':
-        if data['close'].iloc[-1] > float(position['info']['openPriceAvg']) * (1 + params['price_jump_pct']):
+        if data['close'].iloc[-1] > float(position['info']['openPriceAvg']) * (1 + params['price_jump_pct']*0.70):
             bitget.flash_close_position(params['symbol'])
             update_tracker_file(tracker_file, {
                 "last_side": "short",

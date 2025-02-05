@@ -181,6 +181,7 @@ class BitgetFutures():
             params = {'reduceOnly': reduce} 
 
             amount = self.amount_to_precision(symbol, amount)
+            print(f"Placing order: Symbol={symbol}, Side={side}, Amount={amount}")
             return self.session.create_order(symbol, 'market', side, amount, params=params)
 
         except Exception as e:
@@ -192,6 +193,7 @@ class BitgetFutures():
 
             amount = self.amount_to_precision(symbol, amount)
             price = self.price_to_precision(symbol, price)
+            print(f"Placing order: Symbol={symbol}, Side={side}, Amount={amount}, Price={price}")
             return self.session.create_order(symbol, 'limit', side, amount, price, params=params)
 
         except Exception as e:
@@ -207,6 +209,8 @@ class BitgetFutures():
                
                
             }
+            print(f"Order Params: Symbol={symbol}, Side={side}, Amount={amount}, Trigger={trigger_price}, ReduceOnly={reduce}")
+
             return self.session.create_order(symbol, 'market', side, amount, params=params)
         except Exception as err:
             if print_error:
@@ -225,6 +229,8 @@ class BitgetFutures():
                 'triggerPrice': trigger_price,
                 
             }
+            print(f"Order Params: Symbol={symbol}, Side={side}, Amount={amount}, Trigger={trigger_price}, ReduceOnly={reduce}")
+
             return self.session.create_order(symbol, 'limit', side, amount, price, params=params)
         except Exception as err:
             if print_error:
