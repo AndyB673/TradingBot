@@ -11,7 +11,7 @@ from utilities.bitget_futures import BitgetFutures
 
 # --- CONFIG ---
 params = {
-    'symbol': 'PEPE/USDT:USDT',
+    'symbol': '/USDT:USDT',
     'timeframe': '1h',
     'margin_mode': 'isolated',  # 'cross'
     'balance_fraction': 1,
@@ -19,8 +19,8 @@ params = {
     'average_type': 'DCM',  # 'SMA', 'EMA', 'WMA', 'DCM' 
     'average_period': 5,
     'envelopes': [0.07, 0.11, 0.14],
-    'stop_loss_pct': 0.04,
-    'price_jump_pct': 0.1,  # optional, uncomment to use
+    'stop_loss_pct': 0.01,
+#    'price_jump_pct': 0.3,  # optional, uncomment to use
     'use_longs': True,  # set to False if you want to use only shorts
     'use_shorts': True,  # set to False if you want to use only longs
 }
@@ -30,7 +30,7 @@ key_name = 'envelope'
 
 tracker_file = f"LiveTradingBots/code/strategies/envelope/tracker_{params['symbol'].replace('/', '-').replace(':', '-')}.json"
 
-trigger_price_delta = 0.01  # what I use for a 1h timeframe
+trigger_price_delta = 0.005  # what I use for a 1h timeframe
 # trigger_price_delta = 0.0015  # what I use for a 15m timeframe
 
 # --- AUTHENTICATION ---
@@ -266,11 +266,7 @@ if long_ok:
                 reduce=True,
                 print_error=True,
             )
-            if sl_order is None:
-             print("Stop-loss order failed, skipping ID append.")
-            else:
-             info["stop_loss_ids"].append(sl_order['id'])
-            
+            info["stop_loss_ids"].append(sl_order['id'])
             print(f"{datetime.now().strftime('%H:%M:%S')}: placed sl long trigger market order of {amount}, price {data[f'band_low_{i + 1}'].iloc[-1] * (1 - params['stop_loss_pct'])}")
         else:
             print(f"{datetime.now().strftime('%H:%M:%S')}: /!\\ long orders not placed for envelope {i+1}, amount {amount} smaller than minimum requirement {min_amount}")
