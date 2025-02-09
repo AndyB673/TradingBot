@@ -123,7 +123,7 @@ if open_position:
 # --- CHECKS IF CLOSE ALL SHOULD TRIGGER ---
 if 'price_jump_pct' in params and open_position:
     if position['side'] == 'long':
-        if data['close'].iloc[-1] < float(position['info']['openPriceAvg']) * (1 - params['price_jump_pct']*0.70):
+        if data['close'].iloc[-1] < float(position['info']['openPriceAvg']) * (1 - params['price_jump_pct']):
             bitget.flash_close_position(params['symbol'])
             update_tracker_file(tracker_file, {
                 "last_side": "long",
@@ -133,7 +133,7 @@ if 'price_jump_pct' in params and open_position:
             print(f"{datetime.now().strftime('%H:%M:%S')}: /!\\ close all was triggered")
 
     elif position['side'] == 'short':
-        if data['close'].iloc[-1] > float(position['info']['openPriceAvg']) * (1 + params['price_jump_pct']*0.70):
+        if data['close'].iloc[-1] > float(position['info']['openPriceAvg']) * (1 + params['price_jump_pct']):
             bitget.flash_close_position(params['symbol'])
             update_tracker_file(tracker_file, {
                 "last_side": "short",
@@ -314,3 +314,53 @@ if short_ok:
             
 update_tracker_file(tracker_file, info)
 print(f"{datetime.now().strftime('%H:%M:%S')}: <<< all done")
+
+# --- LOGGING ---
+# Get current balance and leverage
+# --- LOGGING ---
+# Get current balance, leverage, and positions
+total_balance = bitget.fetch_balance()['USDT']['total']
+current_leverage = params['leverage']
+positions = bitget.fetch_open_positions(params['symbol'])
+unrealized_pnl = sum(float(pos['info']['upl']) for pos in positions)
+
+# Get additional data: market price and order amount
+market_price = bitget.fetch_ticker(params['symbol'])['last']
+order_amount = sum(float(pos['contracts']) * float(pos['contractSize']) for pos in positions)
+
+# Determine position side (if any)
+position_side = positions[0]['side'] if positions else None
+
+# Prepare log data
+log_time = datetime.now()
+log_data = {
+    "date": log_time.strftime('%Y-%m-%d'),
+    "time": log_time.strftime('%H:%M:%S'),
+    "balance": total_balance,
+    "leverage": current_leverage,
+    "order_amount": order_amount,
+    "market_price": market_price,
+    "position_side": position_side,
+    "profit": max(unrealized_pnl, 0),
+    "loss": abs(min(unrealized_pnl, 0))
+}
+
+# Create logs directory if not exists
+log_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
+# Write to CSV log file
+log_file = os.path.join(log_dir, f"envelope_strategy_log.csv")
+file_exists = os.path.exists(log_file)
+# Write to CSV
+try:
+    file_exists = os.path.exists(log_file)
+    with open(log_file, 'a') as f:
+        if not file_exists:
+            f.write("date,time,balance,leverage,order_amount,market_price,position_side,profit,loss\n")
+        f.write(f"{log_data['date']},{log_data['time']},{log_data['balance']},{log_data['leverage']},"
+                f"{log_data['order_amount']},{log_data['market_price']},{log_data['position_side']},"
+                f"{log_data['profit']},{log_data['loss']}\n")
+    print(f"{log_time.strftime('%H:%M:%S')}: Log saved to {log_file}")
+except Exception as e:
+    print(f"!!! Failed to save log: {e}")
